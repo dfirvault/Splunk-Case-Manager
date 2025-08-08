@@ -48,7 +48,7 @@ A Python-based GUI/CLI hybrid tool for managing Splunk indexes, including creati
 
 1. Clone the repository:
    ```bash
-   git clone [https://github.com/dfirvault/Splunk-Case-Manager/splunk-Case-manager.git](https://github.com/dfirvault/Splunk-Case-Manager.git)
+   git clone https://github.com/dfirvault/Splunk-Case-Manager.git
    cd splunk-manager
    ```
 2. ```bash
