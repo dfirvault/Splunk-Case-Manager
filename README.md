@@ -2,8 +2,9 @@
 
 ![Python](https://img.shields.io/badge/python-3.7%2B-blue)
 
-<img width="626" height="589" alt="image" src="https://github.com/user-attachments/assets/effc6504-6331-491b-91ab-0a75a7d382d0" />
-<img width="687" height="859" alt="image" src="https://github.com/user-attachments/assets/f2d35a3b-1d08-4ccf-9278-966ade1321d5" />
+<img width="672" height="899" alt="image" src="https://github.com/user-attachments/assets/f6d6a663-c232-4f06-8883-66ab97ed077b" />
+<img width="817" height="630" alt="image" src="https://github.com/user-attachments/assets/6276bd3d-cbac-4aed-a169-368c2ee8dff4" />
+
 
 The output of the above will produce .zip files that contain your Splunk index which you can move or backup to a different location:
 <img width="611" height="182" alt="image" src="https://github.com/user-attachments/assets/0bacfac6-d87e-493e-8da9-f1e74d20ef88" />
