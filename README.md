@@ -3,6 +3,7 @@
 ![Python](https://img.shields.io/badge/python-3.7%2B-blue)
 
 <img width="626" height="589" alt="image" src="https://github.com/user-attachments/assets/effc6504-6331-491b-91ab-0a75a7d382d0" />
+<img width="687" height="859" alt="image" src="https://github.com/user-attachments/assets/f2d35a3b-1d08-4ccf-9278-966ade1321d5" />
 
 A Python-based GUI/CLI hybrid tool for managing Splunk indexes, including creation, deletion, and backup/restore operations.
 
