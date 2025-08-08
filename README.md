@@ -5,6 +5,10 @@
 <img width="626" height="589" alt="image" src="https://github.com/user-attachments/assets/effc6504-6331-491b-91ab-0a75a7d382d0" />
 <img width="687" height="859" alt="image" src="https://github.com/user-attachments/assets/f2d35a3b-1d08-4ccf-9278-966ade1321d5" />
 
+The output of the above will produce .zip files that contain your Splunk index which you can move or backup to a different location:
+<img width="617" height="202" alt="image" src="https://github.com/user-attachments/assets/0d877b7c-4c5a-492b-8fa0-e04673582258" />
+
+
 A Python-based GUI/CLI hybrid tool for managing Splunk indexes, including creation, deletion, and backup/restore operations.
 
 ## Features v0.3 added error handling, more functionlity and better ui!
@@ -67,6 +71,7 @@ Password (in plaintext - see Security Note)
 Consider using environment variables
 Or implement proper encryption
 Or use Splunk's app token authentication
+Lastly, this only backs up your index, dashboards and other changes are not included. This is purely for index management.
 
 ## License
 MIT License - See LICENSE file
