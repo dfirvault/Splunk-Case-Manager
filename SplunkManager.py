@@ -18,7 +18,7 @@ if platform.system() == 'Windows':
     colorama.init()
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  Splunk Index Manager v0.3
+#  Splunk Index Manager v0.4
 #  Developed by Jacob Wilson • dfirvault@gmail.com
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -41,7 +41,7 @@ class Style:
 # Print formatted header
 def print_header():
     print(f"\n{Style.BLUE}{Style.HEADER}{Style.END}")
-    print(f"{Style.BOLD}{Style.BLUE}  Splunk Index Manager {Style.END}v0.3")
+    print(f"{Style.BOLD}{Style.BLUE}  Splunk Index Manager {Style.END}v0.4")
     print(f"  {Style.BLUE}Developed by Jacob Wilson • dfirvault@gmail.com{Style.END}")
     print(f"{Style.BLUE}{Style.HEADER}{Style.END}\n")
 
@@ -440,53 +440,111 @@ class SplunkManager:
             if os.path.exists(index_folder):
                 total_files = sum(len(files) for _, _, files in os.walk(index_folder))
             
-            with zipfile.ZipFile(zip_filename, 'w', zipfile.ZIP_DEFLATED) as zipf:
-                processed_files = 0
-                
-                # Add .dat file if exists
-                if os.path.exists(dat_file):
-                    zipf.write(dat_file, os.path.basename(dat_file))
-                    print(f" {Style.GREEN}✓{Style.END} Added .dat file to backup")
-                
-                # Add entire index folder structure
-                if os.path.exists(index_folder):
-                    # First add empty directories
-                    for root, dirs, files in os.walk(index_folder):
-                        for dir in dirs:
-                            dir_path = os.path.join(root, dir)
-                            arcname = os.path.join(
-                                os.path.basename(index_folder),
-                                os.path.relpath(dir_path, index_folder)
-                            )
-                            zipf.write(dir_path, arcname)
+            # Try to use pyzipper for AES encryption if password is provided
+            if password:
+                try:
+                    import pyzipper
+                    use_pyzipper = True
+                except ImportError:
+                    use_pyzipper = False
+                    self.print_warning("pyzipper not available, falling back to standard zipfile")
+                    self.print_warning("For proper encryption, install pyzipper: pip install pyzipper")
+            else:
+                use_pyzipper = False
+            
+            processed_files = 0
+            
+            if password and use_pyzipper:
+                # Use pyzipper with AES encryption
+                with pyzipper.AESZipFile(
+                    zip_filename,
+                    'w',
+                    compression=pyzipper.ZIP_DEFLATED,
+                    encryption=pyzipper.WZ_AES
+                ) as zipf:
+                    zipf.setpassword(password.encode('utf-8'))
                     
-                    # Then add files with progress bar
-                    for root, dirs, files in os.walk(index_folder):
-                        for file in files:
-                            file_path = os.path.join(root, file)
-                            arcname = os.path.join(
-                                os.path.basename(index_folder),
-                                os.path.relpath(file_path, index_folder)
-                            )
-                            zipf.write(file_path, arcname)
-                            processed_files += 1
-                            
-                            # Update progress every 10 files or when done
-                            if processed_files % 10 == 0 or processed_files == total_files:
-                                progress = int(50 * processed_files / total_files) if total_files > 0 else 50
-                                print(f"\r[{Style.GREEN}{'█' * progress}{' ' * (50 - progress)}{Style.END}] {processed_files}/{total_files}", end="")
-                
-                if password:
-                    zipf.setpassword(password.encode())
+                    # Add .dat file if exists
+                    if os.path.exists(dat_file):
+                        zipf.write(dat_file, os.path.basename(dat_file))
+                        print(f" {Style.GREEN}✓{Style.END} Added encrypted .dat file to backup")
+                        processed_files += 1
+                    
+                    # Add entire index folder structure
+                    if os.path.exists(index_folder):
+                        for root, dirs, files in os.walk(index_folder):
+                            for file in files:
+                                file_path = os.path.join(root, file)
+                                arcname = os.path.join(
+                                    os.path.basename(index_folder),
+                                    os.path.relpath(file_path, index_folder)
+                                )
+                                zipf.write(file_path, arcname)
+                                processed_files += 1
+                                
+                                # Update progress
+                                if processed_files % 10 == 0 or processed_files == total_files:
+                                    progress = int(50 * processed_files / total_files) if total_files > 0 else 50
+                                    print(f"\r[{Style.GREEN}{'█' * progress}{' ' * (50 - progress)}{Style.END}] {processed_files}/{total_files}", end="")
+            else:
+                # Fallback to standard zipfile
+                with zipfile.ZipFile(zip_filename, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                    if password:
+                        zipf.setpassword(password.encode('utf-8'))
+                        self.print_warning("Using weak ZIP encryption (install pyzipper for AES encryption)")
+                    
+                    # Add .dat file if exists
+                    if os.path.exists(dat_file):
+                        zipf.write(dat_file, os.path.basename(dat_file))
+                        print(f" {Style.GREEN}✓{Style.END} Added .dat file to backup")
+                        processed_files += 1
+                    
+                    # Add entire index folder structure
+                    if os.path.exists(index_folder):
+                        for root, dirs, files in os.walk(index_folder):
+                            for file in files:
+                                file_path = os.path.join(root, file)
+                                arcname = os.path.join(
+                                    os.path.basename(index_folder),
+                                    os.path.relpath(file_path, index_folder)
+                                )
+                                zipf.write(file_path, arcname)
+                                processed_files += 1
+                                
+                                # Update progress
+                                if processed_files % 10 == 0 or processed_files == total_files:
+                                    progress = int(50 * processed_files / total_files) if total_files > 0 else 50
+                                    print(f"\r[{Style.GREEN}{'█' * progress}{' ' * (50 - progress)}{Style.END}] {processed_files}/{total_files}", end="")
             
             time_taken = time.time() - start_time
             print(f"\n{Style.GREEN}✓{Style.END} Backup completed in {time_taken:.1f} seconds!")
+            
+            # Verify encryption if password was used
+            if password:
+                try:
+                    if use_pyzipper:
+                        # Test pyzipper encryption
+                        with pyzipper.AESZipFile(zip_filename) as test_zip:
+                            test_zip.setpassword(password.encode('utf-8'))
+                            test_zip.testzip()
+                        self.print_success("Backup successfully encrypted with AES-256")
+                    else:
+                        # Test standard zip encryption
+                        with zipfile.ZipFile(zip_filename, 'r') as test_zip:
+                            test_zip.setpassword(password.encode('utf-8'))
+                            test_zip.testzip()
+                        self.print_success("Password protection verified (weak encryption)")
+                except Exception as e:
+                    self.print_warning(f"Could not verify encryption: {str(e)}")
+            
             return True, (f"\n{Style.GREEN}Backup completed successfully!{Style.END}\n"
                   f"{Style.BLUE}Location:{Style.END} {os.path.normpath(zip_filename)}\n"
-                  f"{Style.BLUE}Contents:{Style.END} {'DAT file + ' if os.path.exists(dat_file) else ''}{processed_files} files from index folder")
+                  f"{Style.BLUE}Contents:{Style.END} {'DAT file + ' if os.path.exists(dat_file) else ''}{processed_files} files from index folder\n"
+                  f"{Style.BLUE}Encryption:{Style.END} {'Enabled (AES-256)' if password and use_pyzipper else 'Enabled (weak)' if password else 'Disabled'}")
         except Exception as e:
             return False, f"Backup failed: {str(e)}"
 
+    
     def restore_backup(self, backup_file):
         """Restore an index from backup zip file"""
         self.show_progress("Preparing to restore backup...")
@@ -501,6 +559,24 @@ class SplunkManager:
         print(f"\n{Style.BLUE}♻ Restoring backup from:{Style.END} {backup_file}")
         print(f"{Style.BLUE}•{Style.END} Target location: {splunk_db}")
         
+        # Check if the backup is encrypted and if we have pyzipper
+        is_encrypted = False
+        try:
+            # First try with standard zipfile
+            with zipfile.ZipFile(backup_file, 'r') as test_zip:
+                try:
+                    test_zip.testzip()
+                except RuntimeError as e:
+                    if 'encrypted' in str(e):
+                        is_encrypted = True
+        except Exception as e:
+            return False, f"Unable to read backup file: {str(e)}"
+        
+        password = None
+        if is_encrypted:
+            print(f"\n{Style.YELLOW}🔑 This backup is password protected{Style.END}")
+            password = getpass.getpass(f"{Style.PROMPT} Enter backup password: ")
+        
         try:
             # Extract the index name from the backup filename
             base_name = os.path.basename(backup_file)
@@ -510,39 +586,109 @@ class SplunkManager:
             restoring_dat = False
             restoring_folder = False
             
-            with zipfile.ZipFile(backup_file, 'r') as zip_ref:
-                # First check what we have in the backup
-                for file in zip_ref.namelist():
-                    if file.endswith('.dat'):
-                        restoring_dat = True
-                    elif file.startswith(f'{index_name}/'):
-                        restoring_folder = True
-                
-                # Restore .dat file if present
-                if restoring_dat:
-                    dat_file = f"{index_name}.dat"
-                    print(f"\n{Style.BLUE}⏳ Restoring {dat_file}...{Style.END}")
-                    zip_ref.extract(dat_file, splunk_db)
-                    print(f" {Style.GREEN}✓{Style.END} Restored {dat_file} to {splunk_db}")
-                
-                # Restore folder if present
-                if restoring_folder:
-                    print(f"\n{Style.BLUE}⏳ Restoring {index_name} folder...{Style.END}")
-                    file_count = 0
+            # Determine which library to use for extraction
+            use_pyzipper = False
+            if is_encrypted:
+                try:
+                    import pyzipper
+                    use_pyzipper = True
+                except ImportError:
+                    self.print_warning("pyzipper not available, falling back to standard zipfile for encrypted backup")
+                    self.print_warning("For better compatibility with encrypted backups, install pyzipper: pip install pyzipper")
+            
+            if use_pyzipper:
+                # Use pyzipper for encrypted backups
+                with pyzipper.AESZipFile(backup_file, 'r') as zip_ref:
+                    if password:
+                        zip_ref.setpassword(password.encode('utf-8'))
+                    
+                    # First check what we have in the backup
                     for file in zip_ref.namelist():
-                        if file.startswith(f'{index_name}/'):
-                            zip_ref.extract(file, splunk_db)
-                            file_count += 1
-                            if file_count % 10 == 0:
-                                print(f"\r {Style.BLUE}•{Style.END} Restored {file_count} files...", end="")
-                    print(f"\r {Style.GREEN}✓{Style.END} Restored {file_count} files to {index_name} folder")
-                
-                # Verify the index exists in Splunk
-                if not self.index_exists(index_name):
-                    print(f"\n{Style.BLUE}⏳ Creating index {index_name} in Splunk...{Style.END}")
-                    success, message = self.create_index(index_name)
-                    if not success:
-                        return False, f"Restore failed: {message}"
+                        if file.endswith('.dat'):
+                            restoring_dat = True
+                        elif file.startswith(f'{index_name}/'):
+                            restoring_folder = True
+                    
+                    # Restore .dat file if present
+                    if restoring_dat:
+                        dat_file = f"{index_name}.dat"
+                        print(f"\n{Style.BLUE}⏳ Restoring {dat_file}...{Style.END}")
+                        try:
+                            zip_ref.extract(dat_file, splunk_db)
+                            print(f" {Style.GREEN}✓{Style.END} Restored {dat_file} to {splunk_db}")
+                        except RuntimeError as e:
+                            if 'Bad password' in str(e):
+                                return False, "Incorrect password provided for encrypted backup"
+                            raise
+                    
+                    # Restore folder if present
+                    if restoring_folder:
+                        print(f"\n{Style.BLUE}⏳ Restoring {index_name} folder...{Style.END}")
+                        file_count = 0
+                        for file in zip_ref.namelist():
+                            if file.startswith(f'{index_name}/'):
+                                try:
+                                    zip_ref.extract(file, splunk_db)
+                                    file_count += 1
+                                    if file_count % 10 == 0:
+                                        print(f"\r {Style.BLUE}•{Style.END} Restored {file_count} files...", end="")
+                                except RuntimeError as e:
+                                    if 'Bad password' in str(e):
+                                        return False, "Incorrect password provided for encrypted backup"
+                                    raise
+                        print(f"\r {Style.GREEN}✓{Style.END} Restored {file_count} files to {index_name} folder")
+            else:
+                # Use standard zipfile for unencrypted or fallback for encrypted
+                with zipfile.ZipFile(backup_file, 'r') as zip_ref:
+                    if password:
+                        zip_ref.setpassword(password.encode('utf-8'))
+                    
+                    # First check what we have in the backup
+                    for file in zip_ref.namelist():
+                        if file.endswith('.dat'):
+                            restoring_dat = True
+                        elif file.startswith(f'{index_name}/'):
+                            restoring_folder = True
+                    
+                    # Restore .dat file if present
+                    if restoring_dat:
+                        dat_file = f"{index_name}.dat"
+                        print(f"\n{Style.BLUE}⏳ Restoring {dat_file}...{Style.END}")
+                        try:
+                            zip_ref.extract(dat_file, splunk_db)
+                            print(f" {Style.GREEN}✓{Style.END} Restored {dat_file} to {splunk_db}")
+                        except RuntimeError as e:
+                            if 'Bad password' in str(e):
+                                return False, "Incorrect password provided for encrypted backup"
+                            elif 'compression method' in str(e):
+                                return False, "Compression method not supported - try installing pyzipper: pip install pyzipper"
+                            raise
+                    
+                    # Restore folder if present
+                    if restoring_folder:
+                        print(f"\n{Style.BLUE}⏳ Restoring {index_name} folder...{Style.END}")
+                        file_count = 0
+                        for file in zip_ref.namelist():
+                            if file.startswith(f'{index_name}/'):
+                                try:
+                                    zip_ref.extract(file, splunk_db)
+                                    file_count += 1
+                                    if file_count % 10 == 0:
+                                        print(f"\r {Style.BLUE}•{Style.END} Restored {file_count} files...", end="")
+                                except RuntimeError as e:
+                                    if 'Bad password' in str(e):
+                                        return False, "Incorrect password provided for encrypted backup"
+                                    elif 'compression method' in str(e):
+                                        return False, "Compression method not supported - try installing pyzipper: pip install pyzipper"
+                                    raise
+                        print(f"\r {Style.GREEN}✓{Style.END} Restored {file_count} files to {index_name} folder")
+            
+            # Verify the index exists in Splunk
+            if not self.index_exists(index_name):
+                print(f"\n{Style.BLUE}⏳ Creating index {index_name} in Splunk...{Style.END}")
+                success, message = self.create_index(index_name)
+                if not success:
+                    return False, f"Restore failed: {message}"
             
             # Update indexes.conf
             conf_updated = self.update_indexes_conf(index_name)
