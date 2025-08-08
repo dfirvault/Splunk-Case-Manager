@@ -1,4 +1,4 @@
-# Splunk Index Manager
+# Splunk Index Manager V0.2
 
 ![Python](https://img.shields.io/badge/python-3.7%2B-blue)
 ![Platform](https://img.shields.io/badge/platform-windows%20%7C%20linux%20%7C%20macOS-lightgrey)
@@ -7,23 +7,32 @@
 
 A Python-based GUI/CLI hybrid tool for managing Splunk indexes, including creation, deletion, and backup/restore operations.
 
-## Features
+## Features v0.2 added error handling, more functionlity and better ui!
 
-- **Index Management**:
-  - Create new indexes
-  - List existing indexes (excluding system indexes)
-  - Delete indexes
-- **Backup & Restore**:
-  - Full index backup (including data files and folder structure)
-  - Password-protected backups (optional)
-  - Restore from backup files
-- **User-Friendly Interface**:
-  - Tkinter-based GUI for file selection
-  - CLI menu system for operations
-  - Automatic config file creation
-- **Cross-Platform**:
-  - Works on Windows, Linux, and macOS
-  - Auto-detects common Splunk installation paths
+### 🗂️ **Index Management**
+- Create, delete, and manage Splunk indexes with simple menu-driven operations  
+- View index sizes with automatic MB/GB conversion for easy monitoring  
+- Intelligent filtering of system indexes and default destinations  
+
+### 💾 **Backup & Restore**
+- Complete index backup including all data files and empty directories  
+- Optional password protection for sensitive backup archives  
+- Full restore functionality with automatic configuration updates  
+
+### 🎨 **User-Friendly Interface**
+- Color-coded console output with intuitive symbols (✓ ✗ ⚠)  
+- Progress bars and animations for long-running operations  
+- Context-aware confirmation prompts for destructive actions  
+
+### ⚙️ **Configuration & Automation**
+- Persistent configuration storage for Splunk path and credentials  
+- Batch operations (backup + delete in one step)  
+- Works across Windows, Linux, and macOS platforms  
+
+### 📊 **Size-Aware Operations**
+- Automatic index size calculation before operations  
+- Visual warnings for large indexes (>2GB)  
+- Smart filtering of system/main indexes from management lists 
 
 ## Prerequisites
 
