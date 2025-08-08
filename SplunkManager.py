@@ -18,7 +18,7 @@ if platform.system() == 'Windows':
     colorama.init()
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  Splunk Index Manager v0.2
+#  Splunk Index Manager v0.3
 #  Developed by Jacob Wilson • dfirvault@gmail.com
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -41,7 +41,7 @@ class Style:
 # Print formatted header
 def print_header():
     print(f"\n{Style.BLUE}{Style.HEADER}{Style.END}")
-    print(f"{Style.BOLD}{Style.BLUE}  Splunk Index Manager {Style.END}v0.2")
+    print(f"{Style.BOLD}{Style.BLUE}  Splunk Index Manager {Style.END}v0.3")
     print(f"  {Style.BLUE}Developed by Jacob Wilson • dfirvault@gmail.com{Style.END}")
     print(f"{Style.BLUE}{Style.HEADER}{Style.END}\n")
 
@@ -192,16 +192,26 @@ class SplunkManager:
             self.verify_splunk()
             
     def run_splunk_command(self, command):
-        """Run a Splunk CLI command"""
+        """Run a Splunk CLI command with suppressed SSL warnings"""
         full_cmd = [self.splunk_path] + command
         try:
             result = subprocess.run(
                 full_cmd,
                 capture_output=True,
                 text=True,
-                shell=True if os.name == 'nt' else False
+                shell=True if os.name == 'nt' else False,
+                env={**os.environ, 'SPLUNK_CLI_SERVER_CERT_VERIFY': '0'}  # Suppress SSL warning
             )
-            return result.stdout + result.stderr
+            # Filter out SSL warnings
+            filtered_output = '\n'.join(
+                line for line in result.stdout.split('\n') 
+                if 'Server Certificate Hostname Validation' not in line
+            )
+            filtered_errors = '\n'.join(
+                line for line in result.stderr.split('\n') 
+                if 'Server Certificate Hostname Validation' not in line
+            )
+            return filtered_output + filtered_errors
         except Exception as e:
             self.print_error(f"Error running Splunk command: {e}")
             return None
@@ -684,18 +694,21 @@ thawedPath = $SPLUNK_DB\\{index_name}\\thaweddb
                 return
             choice = int(choice)
             if 1 <= choice <= len(indexes):
-                selected_index = indexes[choice-1]
-                self.index_operations_menu(selected_index)
+                # Pass the complete display string (with size) to operations menu
+                self.index_operations_menu(indexes[choice-1])
             else:
                 self.print_error("Invalid selection.")
         except ValueError:
             self.print_error("Please enter a number.")
             
-    def index_operations_menu(self, index_name):
-        """Menu for operations on a specific index"""
+    def index_operations_menu(self, index_display):
+        """Menu for operations on a specific index (index_display includes size info)"""
+        # Extract just the index name (before the "-" for size)
+        index_name = index_display.split(' - ')[0].strip()
+        
         while True:
             self.print_divider()
-            print(f"\n{Style.BOLD}🛠 Operations for index:{Style.END} {Style.BLUE}{index_name}{Style.END}")
+            print(f"\n{Style.BOLD}🛠 Operations for index:{Style.END} {Style.BLUE}{index_display}{Style.END}")
             print(f"{Style.BLUE}1:{Style.END} 🗑 Delete index")
             print(f"{Style.BLUE}2:{Style.END} 💾 Backup index")
             print(f"{Style.BLUE}3:{Style.END} 💾🗑 Backup and delete index")
@@ -704,10 +717,9 @@ thawedPath = $SPLUNK_DB\\{index_name}\\thaweddb
             choice = input(f"\n{Style.PROMPT} Enter your choice: ")
             
             if choice == "1":
-                # Delete index - get confirmation immediately
                 confirm = input(f"\n{Style.RED}⚠ Are you absolutely sure you want to permanently delete index '{index_name}'? (y/n): {Style.END}")
                 if confirm.lower() == 'y':
-                    success, message = self.delete_index(index_name)
+                    success, message = self.delete_index(index_name)  # Use cleaned index_name
                     if success:
                         self.print_success(message)
                     else:
@@ -717,14 +729,14 @@ thawedPath = $SPLUNK_DB\\{index_name}\\thaweddb
                 break
                 
             elif choice == "2":
-                self.backup_index_menu(index_name)
+                self.backup_index_menu(index_name)  # Use cleaned index_name
+                break
                 
             elif choice == "3":
-                # Backup and delete - configure backup first, then confirm deletion
-                if self.backup_index_menu(index_name):
+                if self.backup_index_menu(index_name):  # Use cleaned index_name
                     confirm = input(f"\n{Style.RED}⚠ Are you absolutely sure you want to permanently delete index '{index_name}'? (y/n): {Style.END}")
                     if confirm.lower() == 'y':
-                        success, message = self.delete_index(index_name)
+                        success, message = self.delete_index(index_name)  # Use cleaned index_name
                         if success:
                             self.print_success(message)
                         else:
@@ -737,6 +749,7 @@ thawedPath = $SPLUNK_DB\\{index_name}\\thaweddb
                 break
             else:
                 self.print_error("Invalid choice, please try again.")
+
                 
     def delete_index_menu(self, index_name):
         """Menu for deleting an index"""
