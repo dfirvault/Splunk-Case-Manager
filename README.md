@@ -1,4 +1,4 @@
-# Splunk Index Manager V0.3
+# Splunk Index Manager v0.4
 
 ![Python](https://img.shields.io/badge/python-3.7%2B-blue)
 
@@ -11,7 +11,7 @@ The output of the above will produce .zip files that contain your Splunk index w
 
 A Python-based GUI/CLI hybrid tool for managing Splunk indexes, including creation, deletion, and backup/restore operations.
 
-## Features v0.3 added error handling, more functionlity and better ui!
+## Features v0.4 added error handling, more functionlity and better ui!
 
 ### 🗂️ **Index Management**
 - Create, delete, and manage Splunk indexes with simple menu-driven operations  
