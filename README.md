@@ -1,7 +1,8 @@
 # Splunk Index Manager V0.2
 
 ![Python](https://img.shields.io/badge/python-3.7%2B-blue)
-![Platform](https://img.shields.io/badge/platform-windows%20%7C%20linux%20%7C%20macOS-lightgrey)
+![Uploading image.png…]()
+
 
 <img width="688" height="1259" alt="image" src="https://github.com/user-attachments/assets/7e04fa3d-8c0a-4c48-bc2b-a382abf18d28" />
 
