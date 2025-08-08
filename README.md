@@ -1,14 +1,12 @@
-# Splunk Index Manager V0.2
+# Splunk Index Manager V0.3
 
 ![Python](https://img.shields.io/badge/python-3.7%2B-blue)
-![Uploading image.png…]()
 
-
-<img width="688" height="1259" alt="image" src="https://github.com/user-attachments/assets/7e04fa3d-8c0a-4c48-bc2b-a382abf18d28" />
+<img width="626" height="589" alt="image" src="https://github.com/user-attachments/assets/effc6504-6331-491b-91ab-0a75a7d382d0" />
 
 A Python-based GUI/CLI hybrid tool for managing Splunk indexes, including creation, deletion, and backup/restore operations.
 
-## Features v0.2 added error handling, more functionlity and better ui!
+## Features v0.3 added error handling, more functionlity and better ui!
 
 ### 🗂️ **Index Management**
 - Create, delete, and manage Splunk indexes with simple menu-driven operations  
